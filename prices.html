@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Цени — Smile by Medi · Д-р Медиха Таир-Гюрйеева</title>
+  <meta name="description" content="Пълен ценоразпис на услугите в Smile by Medi — консултации, Invisalign, брекети, естетична дентална медицина, профилактика и лечение на кариеси." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap&subset=cyrillic" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="is-loading">
+
+  <div class="cursor__ring" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"></div>
+
+  <div class="curtain" aria-hidden="true">
+    <div class="curtain__top"></div>
+    <div class="curtain__bottom"></div>
+    <div class="curtain__mark">
+      <svg viewBox="0 0 40 40" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M20 6c-7 0-12 5-12 11 0 4 2 7 5 9 1 1 2 2 2 4v1c0 2 2 3 5 3s5-1 5-3v-1c0-2 1-3 2-4 3-2 5-5 5-9 0-6-5-11-12-11z"/>
+        <path d="M11 20c2 2 5 3 9 3s7-1 9-3"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="announcement">
+    <div class="container announcement__inner">
+      <span class="announcement__item">Хиподрума, София · ул. „Хан Пресиян" 10</span>
+      <span class="announcement__divider">·</span>
+      <span class="announcement__item">Понеделник–Петък 10:00–19:00</span>
+      <span class="announcement__divider">·</span>
+      <a class="announcement__item announcement__link" href="tel:+359">Запазете час</a>
+    </div>
+  </div>
+
+  <header class="header" id="siteHeader">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Smile by Medi — начало">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M20 6c-7 0-12 5-12 11 0 4 2 7 5 9 1 1 2 2 2 4v1c0 2 2 3 5 3s5-1 5-3v-1c0-2 1-3 2-4 3-2 5-5 5-9 0-6-5-11-12-11z"/>
+            <path d="M11 20c2 2 5 3 9 3s7-1 9-3"/>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <span class="brand__name">Smile by Medi</span>
+          <span class="brand__tagline">Ортодонтско студио · София</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Основна навигация">
+        <a href="index.html#about">За д-р Таир</a>
+        <a href="index.html#services">Лечения</a>
+        <a href="prices.html" class="is-active" aria-current="page">Цени</a>
+        <a href="index.html#reviews">Отзиви</a>
+        <a href="index.html#contact">Контакти</a>
+      </nav>
+
+      <div class="header__actions">
+        <div class="lang" aria-label="Език">
+          <a href="prices.html" class="is-active" aria-current="page">BG</a>
+          <span class="lang__sep">·</span>
+          <a href="prices-en.html">EN</a>
+        </div>
+        <a href="index.html#contact" class="btn btn--primary header__cta">Запазете консултация</a>
+      </div>
+
+      <button class="menu-toggle" aria-label="Отвори меню" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="prices-hero">
+    <div class="container">
+      <span class="eyebrow reveal">Прозрачност и яснота</span>
+      <h1 class="display split-reveal" data-split>Ценоразпис</h1>
+      <p class="reveal" data-delay="300">
+        Цените по-долу служат за ориентир. Окончателният план и стойност се
+        определят след индивидуална консултация и пълна диагноза.
+      </p>
+    </div>
+  </section>
+
+  <section class="prices">
+    <div class="container prices__inner">
+
+      <nav class="prices__nav" aria-label="Категории цени">
+        <a href="#consult">Консултации</a>
+        <a href="#invisalign">Invisalign</a>
+        <a href="#braces">Брекети</a>
+        <a href="#appliances">Други апарати</a>
+        <a href="#retainers">Ретейнери</a>
+        <a href="#prophylaxis">Профилактика</a>
+        <a href="#cosmetic">Естетика</a>
+        <a href="#caries">Кариеси</a>
+      </nav>
+
+      <div class="prices__content">
+
+        <section class="price-block reveal" id="consult">
+          <h2>Консултации</h2>
+          <span class="price-block__sub">Първа среща и диагноза</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Ортодонтска консултация</span><span class="price-list__price">97.79 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Консултация за дентална процедура</span><span class="price-list__price">68.45 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Контролен преглед</span><span class="price-list__price">48.90 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Ортодонтски анализ</span><span class="price-list__price">312.93 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="invisalign">
+          <h2>Invisalign</h2>
+          <span class="price-block__sub">Прозрачни алайнери — възрастни и деца</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Лека деформация <small>възрастни</small></span><span class="price-list__price">4 302.83 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Умерена деформация <small>възрастни</small></span><span class="price-list__price">6 556.03 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Умерено-тежка деформация <small>възрастни</small></span><span class="price-list__price">7 823.32 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Тежка деформация <small>възрастни</small></span><span class="price-list__price">8 214.49 – 10 170.32 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Invisalign First <small>деца</small></span><span class="price-list__price">5 671.91 – 6 063.07 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="braces">
+          <h2>Брекети</h2>
+          <span class="price-block__sub">Метални, керамични и сапфирени</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Лека деформация</span><span class="price-list__price">4 107.23 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Тежка деформация</span><span class="price-list__price">5 085.16 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Сапфирени / керамични брекети</span><span class="price-list__price">6 063.07 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="appliances">
+          <h2>Други ортодонтски апарати</h2>
+          <span class="price-block__sub">Помощни и подвижни апарати</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Транспалатинална дъга</span><span class="price-list__price">528.07 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Експандер</span><span class="price-list__price">723.66 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Ортопедични апарати</span><span class="price-list__price">410.72 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Подвижни плаки</span><span class="price-list__price">586.75 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Миофункционален апарат</span><span class="price-list__price">469.40 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="retainers">
+          <h2>Ретейнери</h2>
+          <span class="price-block__sub">Дългосрочна стабилност след лечение</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Фиксиран ретейнер <small>на челюст</small></span><span class="price-list__price">293.37 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Вакуумен ретейнер <small>на челюст</small></span><span class="price-list__price">273.82 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Invisalign Vivera ретейнер <small>за двете челюсти</small></span><span class="price-list__price">684.54 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="prophylaxis">
+          <h2>Профилактика</h2>
+          <span class="price-block__sub">Възрастни и деца</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Ултразвуково почистване / AirFlow полиране</span><span class="price-list__price">176.02 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Силанизиране на детски зъб</span><span class="price-list__price">68.45 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Флуорна профилактика <small>деца</small></span><span class="price-list__price">88.01 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Почистване и полиране <small>деца</small></span><span class="price-list__price">88.01 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="cosmetic">
+          <h2>Естетична дентална медицина</h2>
+          <span class="price-block__sub">Бондинг, диастеми и избелване</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Бондинг на зъб</span><span class="price-list__price">293.37 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Затваряне на диастема</span><span class="price-list__price">508.52 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Домашно избелване</span><span class="price-list__price">684.54 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Клинично избелване</span><span class="price-list__price">782.33 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <section class="price-block reveal" id="caries">
+          <h2>Лечение на кариеси</h2>
+          <span class="price-block__sub">Композитни възстановявания и ICON</span>
+          <ul class="price-list">
+            <li><span class="price-list__name">Възстановяване на една повърхност</span><span class="price-list__price">127.13 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Възстановяване на две повърхности</span><span class="price-list__price">146.69 <small>лв.</small></span></li>
+            <li><span class="price-list__name">Възстановяване на три повърхности</span><span class="price-list__price">176.02 <small>лв.</small></span></li>
+            <li><span class="price-list__name">ICON лечение на кариесно петно <small>на зъб</small></span><span class="price-list__price">303.15 <small>лв.</small></span></li>
+          </ul>
+        </section>
+
+        <div class="prices__notice reveal">
+          <strong>Бележка</strong>
+          Цените са в български лева и могат да се променят. Окончателната цена
+          и план за лечение се определят след индивидуална консултация. За
+          въпроси относно начина на плащане или планове на вноски, моля
+          свържете се с нас.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <span class="brand__name">Smile by Medi</span>
+        <p>Д-р Медиха Таир-Гюрйеева · Ортодонтско студио<br/>Хиподрума, София</p>
+      </div>
+      <nav class="footer__nav" aria-label="Долна навигация">
+        <a href="index.html#about">За д-р Таир</a>
+        <a href="index.html#services">Лечения</a>
+        <a href="prices.html">Цени</a>
+        <a href="index.html#reviews">Отзиви</a>
+        <a href="index.html#contact">Контакти</a>
+      </nav>
+      <div class="footer__meta">
+        <p>© <span id="year"></span> Smile by Medi. Всички права запазени.</p>
+        <p class="footer__fineprint">Само със запазен час · Частна практика · София, България</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
