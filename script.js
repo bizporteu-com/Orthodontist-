@@ -265,12 +265,12 @@ function frame() {
       const segProgress = (progress * showcaseTotal) - seg;
       const activeDevice = showcaseDevices[seg];
       if (activeDevice) {
-        const svg = activeDevice.querySelector("svg");
-        if (svg) {
+        const target = activeDevice.querySelector("img, svg");
+        if (target) {
           const rotY = -22 + segProgress * 44;
           const rotX = -8 + Math.sin(progress * Math.PI) * 4;
           const tilt = (segProgress - 0.5) * 4;
-          svg.style.transform =
+          target.style.transform =
             `perspective(1200px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) rotateZ(${tilt.toFixed(2)}deg)`;
         }
       }
