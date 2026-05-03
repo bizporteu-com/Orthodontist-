@@ -1,71 +1,67 @@
 /* ================================================================
    Smile by Medi — interactions, animations, scroll showcase, cursor
+   Performance-conscious: single scroll rAF, idle-aware cursor,
+   off-screen animation pausing.
    ================================================================ */
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-// --- Page-load curtain ---
-window.addEventListener("load", () => {
-  setTimeout(() => document.body.classList.remove("is-loading"), 350);
-});
-setTimeout(() => document.body.classList.remove("is-loading"), 2500);
-
-// --- Sticky header shadow + active section in nav ---
-const header = document.getElementById("siteHeader");
-const navLinks = Array.from(document.querySelectorAll(".nav a[href^='#']"));
-const sections = navLinks
-  .map((a) => document.querySelector(a.getAttribute("href")))
-  .filter(Boolean);
-
-function updateHeader() {
-  if (!header) return;
-  if (window.scrollY > 8) header.classList.add("is-scrolled");
-  else header.classList.remove("is-scrolled");
-
-  // Active section highlight
-  const y = window.scrollY + 140;
-  let activeId = null;
-  for (const s of sections) {
-    if (s.offsetTop <= y) activeId = s.id;
-  }
-  navLinks.forEach((a) => {
-    const href = a.getAttribute("href").slice(1);
-    a.classList.toggle("is-active", href === activeId);
-  });
+// --- Page-load curtain (also remove from layer tree once gone) ---
+const curtainEl = document.querySelector(".curtain");
+function dismissLoading() {
+  if (!document.body.classList.contains("is-loading")) return;
+  document.body.classList.remove("is-loading");
+  // Take it fully out of the compositor after the fade
+  setTimeout(() => { if (curtainEl) curtainEl.style.display = "none"; }, 1400);
 }
-window.addEventListener("scroll", updateHeader, { passive: true });
-updateHeader();
+window.addEventListener("load", () => setTimeout(dismissLoading, 300));
+setTimeout(dismissLoading, 2200);
 
-// --- Custom cursor with lerp + magnetic targets ---
+// --- Custom cursor: only animate while moving + brief coast ---
 (function initCursor() {
   if (!isFinePointer || reduceMotion) return;
   const dot = document.querySelector(".cursor");
   const ring = document.querySelector(".cursor__ring");
   if (!dot || !ring) return;
 
-  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let mx = -100, my = -100;
   let dx = mx, dy = my;
   let rx = mx, ry = my;
+  let raf = null;
+  let lastMoveTs = 0;
 
-  window.addEventListener("mousemove", (e) => { mx = e.clientX; my = e.clientY; });
-  window.addEventListener("mouseleave", () => { dot.classList.add("is-hidden"); ring.classList.add("is-hidden"); });
-  window.addEventListener("mouseenter", () => { dot.classList.remove("is-hidden"); ring.classList.remove("is-hidden"); });
-
-  const tick = () => {
+  function tick() {
+    const dotDist = Math.hypot(mx - dx, my - dy);
+    const ringDist = Math.hypot(mx - rx, my - ry);
     dx += (mx - dx) * 0.55;
     dy += (my - dy) * 0.55;
     rx += (mx - rx) * 0.18;
     ry += (my - ry) * 0.18;
-    dot.style.transform = `translate(${dx}px, ${dy}px) translate(-50%, -50%)`;
-    ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
-    requestAnimationFrame(tick);
-  };
-  tick();
+    dot.style.transform = `translate3d(${dx}px, ${dy}px, 0) translate(-50%, -50%)`;
+    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
 
-  // Hover-grow on interactive targets
-  const hoverables = "a, button, input, textarea, select, label, [data-magnetic]";
-  document.querySelectorAll(hoverables).forEach((el) => {
+    // Sleep once we've coasted to rest and no recent movement
+    const idle = performance.now() - lastMoveTs > 200;
+    if (idle && dotDist < 0.4 && ringDist < 0.4) {
+      raf = null;
+    } else {
+      raf = requestAnimationFrame(tick);
+    }
+  }
+  function wake() {
+    if (raf == null) raf = requestAnimationFrame(tick);
+  }
+
+  window.addEventListener("mousemove", (e) => {
+    mx = e.clientX; my = e.clientY;
+    lastMoveTs = performance.now();
+    wake();
+  }, { passive: true });
+  window.addEventListener("mouseleave", () => { dot.classList.add("is-hidden"); ring.classList.add("is-hidden"); });
+  window.addEventListener("mouseenter", () => { dot.classList.remove("is-hidden"); ring.classList.remove("is-hidden"); });
+
+  document.querySelectorAll("a, button, input, textarea, select, label, [data-magnetic]").forEach((el) => {
     el.addEventListener("mouseenter", () => {
       dot.classList.add("is-hover");
       ring.classList.add("is-hover");
@@ -77,35 +73,28 @@ updateHeader();
   });
 })();
 
-// --- Magnetic buttons ---
+// --- Magnetic buttons (rAF-throttled) ---
 (function initMagnetic() {
   if (!isFinePointer || reduceMotion) return;
-  const els = document.querySelectorAll("[data-magnetic]");
-  els.forEach((el) => {
+  document.querySelectorAll("[data-magnetic]").forEach((el) => {
     let raf = null;
-    let active = false;
-    const strength = 0.25;
     el.addEventListener("mousemove", (e) => {
       const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      active = true;
+      const x = (e.clientX - rect.left - rect.width / 2) * 0.25;
+      const y = (e.clientY - rect.top - rect.height / 2) * 0.25;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+        el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       });
     });
     el.addEventListener("mouseleave", () => {
-      active = false;
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        el.style.transform = "";
-      });
+      raf = requestAnimationFrame(() => { el.style.transform = ""; });
     });
   });
 })();
 
-// --- Split words for headings ---
+// --- Split words for headings (one-time DOM walk) ---
 function splitHeading(el) {
   if (el.dataset.splitDone) return;
   el.dataset.splitDone = "1";
@@ -113,8 +102,7 @@ function splitHeading(el) {
     node.childNodes.forEach((child) => {
       if (child.nodeType === Node.TEXT_NODE) {
         const text = child.textContent;
-        const parts = text.split(/(\s+)/);
-        parts.forEach((part) => {
+        text.split(/(\s+)/).forEach((part) => {
           if (!part) return;
           if (/^\s+$/.test(part)) {
             parent.appendChild(document.createTextNode(part));
@@ -163,17 +151,31 @@ document
   .querySelectorAll(".reveal, .split-reveal, .stagger, .chapter")
   .forEach((el) => revealObserver.observe(el));
 
+// --- Pause off-screen continuous animations (hero ornaments, marquee) ---
+(function initPauseOffscreen() {
+  const pausables = document.querySelectorAll(".hero, .marquee");
+  if (!pausables.length) return;
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        entry.target.classList.toggle("is-paused", !entry.isIntersecting);
+      });
+    },
+    { rootMargin: "100px 0px" }
+  );
+  pausables.forEach((el) => io.observe(el));
+})();
+
 // --- Count-up numbers ---
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 function runCountUp(el) {
   const target = parseInt(el.dataset.countTo, 10);
   const suffix = el.dataset.suffix || "";
-  const duration = 1800;
+  const duration = 1600;
   const start = performance.now();
   const tick = (now) => {
     const t = Math.min(1, (now - start) / duration);
-    const value = Math.round(target * easeOutCubic(t));
-    el.textContent = value + suffix;
+    el.textContent = Math.round(target * easeOutCubic(t)) + suffix;
     if (t < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
@@ -191,107 +193,120 @@ const countObserver = new IntersectionObserver(
 );
 document.querySelectorAll("[data-count-to]").forEach((el) => countObserver.observe(el));
 
-// --- Parallax ---
-const parallaxEls = Array.from(document.querySelectorAll("[data-parallax]"));
-let parallaxTicking = false;
-function updateParallax() {
+// --- Single scroll orchestrator (header + parallax + showcase) ---
+const header = document.getElementById("siteHeader");
+const navLinks = Array.from(document.querySelectorAll(".nav a[href^='#']"));
+const navTargets = navLinks
+  .map((a) => document.querySelector(a.getAttribute("href")))
+  .filter(Boolean);
+const parallaxEls = reduceMotion ? [] : Array.from(document.querySelectorAll("[data-parallax]"));
+const showcaseStage = document.querySelector("[data-showcase]");
+const showcaseItems = showcaseStage ? Array.from(showcaseStage.querySelectorAll("[data-item]")) : [];
+const showcaseDevices = showcaseStage ? Array.from(showcaseStage.querySelectorAll("[data-device]")) : [];
+const showcaseNav = showcaseStage ? Array.from(showcaseStage.querySelectorAll(".showcase__nav button")) : [];
+const showcaseProgress = showcaseStage ? showcaseStage.querySelector(".showcase__progress-bar") : null;
+const showcaseTotal = showcaseItems.length;
+let currentSeg = -1;
+
+const pricesNav = document.querySelector(".prices__nav");
+const pricesLinks = pricesNav ? Array.from(pricesNav.querySelectorAll("a[href^='#']")) : [];
+const pricesTargets = pricesLinks
+  .map((a) => document.querySelector(a.getAttribute("href")))
+  .filter(Boolean);
+
+let ticking = false;
+function frame() {
+  ticking = false;
+  const y = window.scrollY;
   const vh = window.innerHeight;
-  parallaxEls.forEach((el) => {
+
+  // Header scrolled state
+  if (header) {
+    if (y > 8) header.classList.add("is-scrolled");
+    else header.classList.remove("is-scrolled");
+  }
+
+  // Active section in primary nav
+  if (navTargets.length) {
+    const probe = y + 140;
+    let activeId = null;
+    for (const s of navTargets) if (s.offsetTop <= probe) activeId = s.id;
+    navLinks.forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("href") === "#" + activeId);
+    });
+  }
+
+  // Parallax
+  for (const el of parallaxEls) {
     const rect = el.getBoundingClientRect();
-    if (rect.bottom < 0 || rect.top > vh) return;
+    if (rect.bottom < 0 || rect.top > vh) continue;
     const speed = parseFloat(el.dataset.parallax) || 0.05;
     const offset = (rect.top + rect.height / 2 - vh / 2) * -speed;
     el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
-  });
-  parallaxTicking = false;
-}
-function requestParallax() {
-  if (!parallaxTicking) {
-    requestAnimationFrame(updateParallax);
-    parallaxTicking = true;
-  }
-}
-if (parallaxEls.length && !reduceMotion) {
-  window.addEventListener("scroll", requestParallax, { passive: true });
-  window.addEventListener("resize", requestParallax);
-  updateParallax();
-}
-
-// --- Service showcase: scroll-driven device rotation + segment switching ---
-(function initShowcase() {
-  if (reduceMotion) return;
-  const stage = document.querySelector("[data-showcase]");
-  if (!stage) return;
-
-  const sticky = stage.querySelector(".showcase__sticky");
-  const items = Array.from(stage.querySelectorAll("[data-item]"));
-  const devices = Array.from(stage.querySelectorAll("[data-device]"));
-  const navButtons = Array.from(stage.querySelectorAll(".showcase__nav button"));
-  const progressBar = stage.querySelector(".showcase__progress-bar");
-  const total = items.length;
-
-  function setActive(idx) {
-    items.forEach((el, i) => el.classList.toggle("is-active", i === idx));
-    devices.forEach((el, i) => el.classList.toggle("is-active", i === idx));
-    navButtons.forEach((b, i) => b.classList.toggle("is-active", i === idx));
   }
 
-  // Click navigation
-  navButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = parseInt(btn.dataset.go, 10);
-      const rect = stage.getBoundingClientRect();
-      const stageTop = window.scrollY + rect.top;
-      const stageHeight = stage.offsetHeight - window.innerHeight;
-      const target = stageTop + (idx / (total - 1)) * stageHeight + 20;
-      window.scrollTo({ top: target, behavior: "smooth" });
-    });
-  });
+  // Showcase
+  if (showcaseStage && !reduceMotion) {
+    const rect = showcaseStage.getBoundingClientRect();
+    const stageHeight = showcaseStage.offsetHeight - vh;
+    if (stageHeight > 0 && rect.bottom > 0 && rect.top < vh) {
+      const progress = Math.min(1, Math.max(0, -rect.top / stageHeight));
+      const seg = Math.min(showcaseTotal - 1, Math.floor(progress * showcaseTotal * 0.999));
 
-  let ticking = false;
-  function update() {
-    const rect = stage.getBoundingClientRect();
-    const stageHeight = stage.offsetHeight - window.innerHeight;
-    if (stageHeight <= 0) { ticking = false; return; }
+      if (seg !== currentSeg) {
+        currentSeg = seg;
+        showcaseItems.forEach((el, i) => el.classList.toggle("is-active", i === seg));
+        showcaseDevices.forEach((el, i) => el.classList.toggle("is-active", i === seg));
+        showcaseNav.forEach((b, i) => b.classList.toggle("is-active", i === seg));
+      }
 
-    // 0 .. 1 progress through the showcase
-    const progress = Math.min(1, Math.max(0, -rect.top / stageHeight));
+      if (showcaseProgress) showcaseProgress.style.width = (progress * 100).toFixed(2) + "%";
 
-    // active segment
-    const seg = Math.min(total - 1, Math.floor(progress * total * 0.999));
-    setActive(seg);
-
-    // progress bar
-    if (progressBar) progressBar.style.width = (progress * 100).toFixed(2) + "%";
-
-    // local progress within segment 0..1
-    const segProgress = (progress * total) - seg;
-
-    // 3D rotation tied to segment progress
-    const activeDevice = devices[seg];
-    if (activeDevice) {
-      const svg = activeDevice.querySelector("svg");
-      if (svg) {
-        const rotY = -22 + segProgress * 44;        // -22 → +22deg
-        const rotX = -8 + Math.sin(progress * Math.PI) * 4;
-        const tilt = (segProgress - 0.5) * 4;       // subtle Z tilt
-        svg.style.transform =
-          `perspective(1200px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) rotateZ(${tilt.toFixed(2)}deg)`;
+      const segProgress = (progress * showcaseTotal) - seg;
+      const activeDevice = showcaseDevices[seg];
+      if (activeDevice) {
+        const svg = activeDevice.querySelector("svg");
+        if (svg) {
+          const rotY = -22 + segProgress * 44;
+          const rotX = -8 + Math.sin(progress * Math.PI) * 4;
+          const tilt = (segProgress - 0.5) * 4;
+          svg.style.transform =
+            `perspective(1200px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) rotateZ(${tilt.toFixed(2)}deg)`;
+        }
       }
     }
+  }
 
-    ticking = false;
+  // Prices nav scroll-spy
+  if (pricesLinks.length) {
+    const probe = y + 160;
+    let active = null;
+    pricesTargets.forEach((t) => { if (t.offsetTop <= probe) active = t.id; });
+    pricesLinks.forEach((l) => l.classList.toggle("is-active", l.getAttribute("href") === "#" + active));
   }
-  function request() {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
+}
+function requestFrame() {
+  if (!ticking) {
+    requestAnimationFrame(frame);
+    ticking = true;
   }
-  window.addEventListener("scroll", request, { passive: true });
-  window.addEventListener("resize", request);
-  update();
-})();
+}
+window.addEventListener("scroll", requestFrame, { passive: true });
+window.addEventListener("resize", requestFrame, { passive: true });
+frame();
+
+// Showcase nav click-to-jump
+showcaseNav.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (!showcaseStage) return;
+    const idx = parseInt(btn.dataset.go, 10);
+    const rect = showcaseStage.getBoundingClientRect();
+    const stageTop = window.scrollY + rect.top;
+    const stageHeight = showcaseStage.offsetHeight - window.innerHeight;
+    const target = stageTop + (idx / Math.max(1, showcaseTotal - 1)) * stageHeight + 20;
+    window.scrollTo({ top: target, behavior: "smooth" });
+  });
+});
 
 // --- Mobile menu ---
 const toggle = document.querySelector(".menu-toggle");
@@ -325,25 +340,6 @@ form?.addEventListener("submit", (e) => {
     if (note && originalNote) note.textContent = originalNote;
   }, 4500);
 });
-
-// --- Prices page nav scroll-spy ---
-(function initPricesNav() {
-  const nav = document.querySelector(".prices__nav");
-  if (!nav) return;
-  const links = Array.from(nav.querySelectorAll("a[href^='#']"));
-  const targets = links
-    .map((a) => document.querySelector(a.getAttribute("href")))
-    .filter(Boolean);
-
-  function spy() {
-    const y = window.scrollY + 160;
-    let active = null;
-    targets.forEach((t) => { if (t.offsetTop <= y) active = t.id; });
-    links.forEach((l) => l.classList.toggle("is-active", l.getAttribute("href") === "#" + active));
-  }
-  window.addEventListener("scroll", spy, { passive: true });
-  spy();
-})();
 
 // --- Year ---
 const yearEl = document.getElementById("year");
